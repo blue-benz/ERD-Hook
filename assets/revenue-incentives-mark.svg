@@ -1,0 +1,8 @@
+<svg width="300" height="80" viewBox="0 0 300 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="296" height="76" rx="18" fill="#FFFDF6" stroke="#0F6E45" stroke-width="4"/>
+  <circle cx="44" cy="40" r="18" fill="#0F6E45"/>
+  <path d="M37 40H51" stroke="#FFFDF6" stroke-width="4" stroke-linecap="round"/>
+  <path d="M44 33V47" stroke="#FFFDF6" stroke-width="4" stroke-linecap="round"/>
+  <path d="M78 52H124L140 28H188L204 52H252" stroke="#0F6E45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="96" y="27" fill="#0F6E45" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700">Revenue Incentives</text>
+</svg>

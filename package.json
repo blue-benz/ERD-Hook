@@ -1,0 +1,21 @@
+{
+  "name": "erd-hook-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "bootstrap": "./scripts/bootstrap.sh",
+    "build": "npm run build --workspace frontend",
+    "dev": "npm run dev --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "test": "forge test",
+    "coverage": "forge coverage --report lcov",
+    "abi:export": "./scripts/export_abis.sh",
+    "abi:sync": "./scripts/sync_frontend_abis.sh"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

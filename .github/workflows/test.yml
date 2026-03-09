@@ -1,16 +1,14 @@
-name: Test Suite
+name: CI
 
 on:
+  push:
+    branches: ["main"]
+  pull_request:
   workflow_dispatch:
-  # push:
-  # pull_request:
-
-env:
-  FOUNDRY_PROFILE: ci
 
 jobs:
-  test:
-    name: Foundry Project
+  solidity:
+    name: Foundry + Dependency Integrity
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,13 +20,43 @@ jobs:
         with:
           version: stable
 
+      - name: Bootstrap (pin checks)
+        run: ./scripts/bootstrap.sh
+
       - name: Build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+        run: forge build --sizes
 
       - name: Test
+        run: forge test -vvv
+
+      - name: Coverage
+        run: forge coverage --report lcov
+
+      - name: Commit Count Gate
+        run: ./scripts/verify_commits.sh 54
+
+  frontend:
+    name: Frontend Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Export + Sync ABIs
         run: |
-          forge test -vvv
-        id: test
+          ./scripts/export_abis.sh
+          ./scripts/sync_frontend_abis.sh
+
+      - name: Frontend lint/typecheck
+        run: npm run lint --workspace frontend
+
+      - name: Frontend build
+        run: npm run build --workspace frontend

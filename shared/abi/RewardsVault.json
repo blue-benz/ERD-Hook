@@ -1,0 +1,832 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "initialOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claim",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amountOut",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimable",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amountOut",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "controller",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "fundProgram",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "source",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getProgramState",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct IRewardsVault.ProgramState",
+        "components": [
+          {
+            "name": "exists",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "rewardToken",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "distributionType",
+            "type": "uint8",
+            "internalType": "enum IRewardsVault.DistributionType"
+          },
+          {
+            "name": "startTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "endTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "warmupPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "cooldownPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "earlyWithdrawalPenaltyBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "emissionRate",
+            "type": "uint96",
+            "internalType": "uint96"
+          },
+          {
+            "name": "lastUpdate",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "accRewardPerWeightX18",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fundedBalance",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalFunded",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalActiveWeight",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalPendingWeight",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalDistributed",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalClaimed",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalSlashed",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getUserState",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct IRewardsVault.UserState",
+        "components": [
+          {
+            "name": "activeWeight",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "pendingWeight",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "pendingActivation",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "lastStakeIncrease",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "rewardDebtX18",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "pendingRewards",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onLiquidityDelta",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "liquidityDelta",
+        "type": "int256",
+        "internalType": "int256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registerProgram",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "config",
+        "type": "tuple",
+        "internalType": "struct IRewardsVault.ProgramConfig",
+        "components": [
+          {
+            "name": "rewardToken",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "distributionType",
+            "type": "uint8",
+            "internalType": "enum IRewardsVault.DistributionType"
+          },
+          {
+            "name": "startTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "endTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "warmupPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "cooldownPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "earlyWithdrawalPenaltyBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "emissionRate",
+            "type": "uint96",
+            "internalType": "uint96"
+          },
+          {
+            "name": "maxFunding",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "rollEpoch",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "startTime",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "endTime",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "emissionRate",
+        "type": "uint96",
+        "internalType": "uint96"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "router",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setController",
+    "inputs": [
+      {
+        "name": "newController",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setRouter",
+    "inputs": [
+      {
+        "name": "newRouter",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      {
+        "name": "newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateProgramConfig",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "config",
+        "type": "tuple",
+        "internalType": "struct IRewardsVault.ProgramConfig",
+        "components": [
+          {
+            "name": "rewardToken",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "distributionType",
+            "type": "uint8",
+            "internalType": "enum IRewardsVault.DistributionType"
+          },
+          {
+            "name": "startTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "endTime",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "warmupPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "cooldownPeriod",
+            "type": "uint40",
+            "internalType": "uint40"
+          },
+          {
+            "name": "earlyWithdrawalPenaltyBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "emissionRate",
+            "type": "uint96",
+            "internalType": "uint96"
+          },
+          {
+            "name": "maxFunding",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ControllerUpdated",
+    "inputs": [
+      {
+        "name": "previousController",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newController",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "EpochRolled",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "startTime",
+        "type": "uint40",
+        "indexed": false,
+        "internalType": "uint40"
+      },
+      {
+        "name": "endTime",
+        "type": "uint40",
+        "indexed": false,
+        "internalType": "uint40"
+      },
+      {
+        "name": "emissionRate",
+        "type": "uint96",
+        "indexed": false,
+        "internalType": "uint96"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "LiquidityWeightUpdated",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "liquidityDelta",
+        "type": "int256",
+        "indexed": false,
+        "internalType": "int256"
+      },
+      {
+        "name": "activeWeight",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "pendingWeight",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "name": "previousOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ProgramFunded",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "source",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ProgramRegistered",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "rewardToken",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "distributionType",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "enum IRewardsVault.DistributionType"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ProgramUpdated",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "emissionRate",
+        "type": "uint96",
+        "indexed": false,
+        "internalType": "uint96"
+      },
+      {
+        "name": "startTime",
+        "type": "uint40",
+        "indexed": false,
+        "internalType": "uint40"
+      },
+      {
+        "name": "endTime",
+        "type": "uint40",
+        "indexed": false,
+        "internalType": "uint40"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardsClaimed",
+    "inputs": [
+      {
+        "name": "poolId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "lp",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RouterUpdated",
+    "inputs": [
+      {
+        "name": "previousRouter",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newRouter",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "ControllerAlreadySet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FundingCapExceeded",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InsufficientWeight",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidConfig",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidEpochWindow",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidLiquidityDelta",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidOwner",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotController",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotOwner",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotRouter",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ProgramExists",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ProgramNotFound",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Reentrancy",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "RewardTokenImmutable",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "TransferFailed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "UnauthorizedClaim",
+    "inputs": []
+  }
+]

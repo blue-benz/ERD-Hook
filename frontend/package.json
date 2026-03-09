@@ -1,0 +1,23 @@
+{
+  "name": "erd-incentives-console",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ethers": "6.15.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.26",
+    "@types/react-dom": "18.3.7",
+    "typescript": "5.9.2",
+    "vite": "6.3.0"
+  }
+}
