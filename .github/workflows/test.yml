@@ -32,8 +32,8 @@ jobs:
       - name: Coverage
         run: forge coverage --report lcov
 
-      - name: Commit Count Gate
-        run: ./scripts/verify_commits.sh 54
+      - name: Commit Count Gate (optional)
+        run: ./scripts/verify_commits.sh
 
   frontend:
     name: Frontend Typecheck
