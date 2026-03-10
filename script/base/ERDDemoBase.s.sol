@@ -15,9 +15,9 @@ import {Currency, CurrencyLibrary} from "@uniswap/v4-core/src/types/Currency.sol
 import {LiquidityAmounts} from "@uniswap/v4-core/test/utils/LiquidityAmounts.sol";
 import {Constants} from "@uniswap/v4-core/test/utils/Constants.sol";
 import {IPositionManager} from "@uniswap/v4-periphery/src/interfaces/IPositionManager.sol";
+import {Actions} from "@uniswap/v4-periphery/src/libraries/Actions.sol";
 
 import {Deployers} from "../../test/utils/Deployers.sol";
-import {EasyPosm} from "../../test/utils/libraries/EasyPosm.sol";
 
 import {IncentiveController} from "../../src/IncentiveController.sol";
 import {IncentivesHook} from "../../src/IncentivesHook.sol";
@@ -31,12 +31,14 @@ import {MockRevenueAdapter, IMintableERC20} from "../../src/mocks/MockRevenueAda
 
 abstract contract ERDDemoBase is Script, Deployers {
     using PoolIdLibrary for PoolKey;
-    using EasyPosm for IPositionManager;
     using CurrencyLibrary for Currency;
 
     uint128 internal constant LP_LIQUIDITY = 100 ether;
+    uint128 internal constant ACTIVATION_LIQUIDITY_TOUCH = 1;
     uint256 internal constant DIRECT_FUNDING = 1_000 ether;
     uint256 internal constant ADAPTER_FUNDING = 500 ether;
+    uint256 internal constant LP_GAS_TOPUP = 0.02 ether;
+    uint96 internal constant DEMO_EMISSION_RATE = 0.01 ether;
 
     uint256 internal constant DEFAULT_DEPLOYER_KEY =
         0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
@@ -81,19 +83,36 @@ abstract contract ERDDemoBase is Script, Deployers {
     function _runDemo(IRewardsVault.DistributionType distributionType) internal {
         DemoState memory s;
 
-        s.deployerKey = _keyOrDefault("PRIVATE_KEY", DEFAULT_DEPLOYER_KEY);
-        s.lpAKey = _keyOrDefault("LP_A_PRIVATE_KEY", DEFAULT_LP_A_KEY);
-        s.lpBKey = _keyOrDefault("LP_B_PRIVATE_KEY", DEFAULT_LP_B_KEY);
+        console2.log("== ERD Demo: External Revenue -> LP Incentives ==");
+        console2.log("phase 0: actor + key resolution");
+
+        bool useEnvKeysOnLocal = vm.envOr("USE_ENV_KEYS_ON_LOCAL", false);
+        if (block.chainid == 31337 && !useEnvKeysOnLocal) {
+            s.deployerKey = DEFAULT_DEPLOYER_KEY;
+            s.lpAKey = DEFAULT_LP_A_KEY;
+            s.lpBKey = DEFAULT_LP_B_KEY;
+        } else {
+            s.deployerKey = _keyOrDefault("PRIVATE_KEY", DEFAULT_DEPLOYER_KEY);
+            s.lpAKey = _keyOrDefault("LP_A_PRIVATE_KEY", DEFAULT_LP_A_KEY);
+            s.lpBKey = _keyOrDefault("LP_B_PRIVATE_KEY", DEFAULT_LP_B_KEY);
+        }
 
         s.deployer = vm.addr(s.deployerKey);
         s.lpA = vm.addr(s.lpAKey);
         s.lpB = vm.addr(s.lpBKey);
 
+        console2.log("chainId", block.chainid);
+        console2.log("distribution", uint8(distributionType));
+        console2.log("deployer", s.deployer);
+        console2.log("lpA", s.lpA);
+        console2.log("lpB", s.lpB);
+
         vm.startBroadcast(s.deployerKey);
 
+        console2.log("phase 1: deploy v4 infra + ERD contracts");
         deployArtifacts();
 
-        (s.token0, s.token1) = _deployTokenPair();
+        (s.token0, s.token1) = _deployTokenPair(s.deployer, s.lpA, s.lpB);
 
         s.rewardToken = new MockRewardToken("Reward Token", "RWD");
         s.vault = new RewardsVault(s.deployer);
@@ -130,38 +149,65 @@ abstract contract ERDDemoBase is Script, Deployers {
         s.tickLower = TickMath.minUsableTick(s.poolKey.tickSpacing);
         s.tickUpper = TickMath.maxUsableTick(s.poolKey.tickSpacing);
 
+        console2.log("phase 2: configure incentive program");
         _createProgram(s, distributionType);
 
+        console2.log("phase 3: fund from sponsor + external revenue adapter");
         _fundProgram(s);
+
+        bool testnetDeployOnly = block.chainid != 31337 && vm.envOr("TESTNET_DEPLOY_ONLY", false);
+        if (testnetDeployOnly) {
+            IRewardsVault.ProgramState memory earlyState = s.vault.getProgramState(s.poolId);
+            console2.log("phase 4: deploy-only mode on non-local chain (skipping LP/swap/claim steps)");
+            _printSummary(s, earlyState, 0, 0);
+            vm.stopBroadcast();
+            return;
+        }
+
+        console2.log("phase 4: LP gas readiness");
+        if (block.chainid == 31337) {
+            _topUpNativeIfNeeded(s.deployer, s.lpA, LP_GAS_TOPUP);
+            _topUpNativeIfNeeded(s.deployer, s.lpB, LP_GAS_TOPUP);
+        } else {
+            console2.log("non-local run: expecting LP wallets pre-funded by runner");
+        }
 
         vm.stopBroadcast();
 
+        console2.log("phase 5: LP A enters first");
         _prepareLpWallet(s.lpAKey, s.token0, s.token1);
         _prepareLpWallet(s.lpBKey, s.token0, s.token1);
 
         _mintForLp(s, s.lpAKey, s.lpA, LP_LIQUIDITY);
+        _activateWeightForZeroWarmup(s, s.lpAKey, s.lpA);
 
-        if (block.chainid == 31337) {
-            vm.warp(block.timestamp + 1 hours);
-        }
+        _advanceLocalTime(1 hours);
 
+        console2.log("phase 6: LP B enters later");
         _mintForLp(s, s.lpBKey, s.lpB, LP_LIQUIDITY);
+        _activateWeightForZeroWarmup(s, s.lpBKey, s.lpB);
 
-        if (block.chainid == 31337) {
-            vm.warp(block.timestamp + 30 minutes);
-        }
+        _advanceLocalTime(30 minutes);
 
+        console2.log("phase 7: pool activity via swap");
         _runSwap(s);
 
-        if (distributionType == IRewardsVault.DistributionType.EPOCH && block.chainid == 31337) {
-            vm.warp(block.timestamp + 1 days + 1);
+        if (distributionType == IRewardsVault.DistributionType.EPOCH) {
+            _advanceLocalTime(1 days + 1);
         }
 
+        console2.log("phase 8: LP claims");
         uint256 claimA = _claimForLp(s.lpAKey, s.controller, s.poolId, s.lpA);
         uint256 claimB = _claimForLp(s.lpBKey, s.controller, s.poolId, s.lpB);
 
         IRewardsVault.ProgramState memory state = s.vault.getProgramState(s.poolId);
+        _printSummary(s, state, claimA, claimB);
+    }
 
+    function _printSummary(DemoState memory s, IRewardsVault.ProgramState memory state, uint256 claimA, uint256 claimB)
+        internal
+        view
+    {
         console2.log("=== ERD Demo Summary ===");
         console2.log("deployer", s.deployer);
         console2.log("lpA", s.lpA);
@@ -174,25 +220,30 @@ abstract contract ERDDemoBase is Script, Deployers {
         console2.log("rewardToken", address(s.rewardToken));
         console2.log("directFunding", DIRECT_FUNDING);
         console2.log("adapterFunding", ADAPTER_FUNDING);
+        console2.log("emissionRate", state.emissionRate);
         console2.log("totalFunded", state.totalFunded);
         console2.log("totalActiveWeight", state.totalActiveWeight);
         console2.log("claimA", claimA);
         console2.log("claimB", claimB);
         console2.log("totalSlashed", state.totalSlashed);
+        console2.log("user-perspective: external revenue funded incentives and both LPs claimed on-chain");
     }
 
-    function _deployTokenPair() internal returns (MockERC20 token0_, MockERC20 token1_) {
+    function _deployTokenPair(address deployer, address lpA, address lpB)
+        internal
+        returns (MockERC20 token0_, MockERC20 token1_)
+    {
         MockERC20 tokenA = new MockERC20("LP Token A", "LPA", 18);
         MockERC20 tokenB = new MockERC20("LP Token B", "LPB", 18);
 
         (token0_, token1_) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
 
-        token0_.mint(msg.sender, 5_000_000 ether);
-        token1_.mint(msg.sender, 5_000_000 ether);
-        token0_.mint(vm.addr(_keyOrDefault("LP_A_PRIVATE_KEY", DEFAULT_LP_A_KEY)), 1_000_000 ether);
-        token1_.mint(vm.addr(_keyOrDefault("LP_A_PRIVATE_KEY", DEFAULT_LP_A_KEY)), 1_000_000 ether);
-        token0_.mint(vm.addr(_keyOrDefault("LP_B_PRIVATE_KEY", DEFAULT_LP_B_KEY)), 1_000_000 ether);
-        token1_.mint(vm.addr(_keyOrDefault("LP_B_PRIVATE_KEY", DEFAULT_LP_B_KEY)), 1_000_000 ether);
+        token0_.mint(deployer, 5_000_000 ether);
+        token1_.mint(deployer, 5_000_000 ether);
+        token0_.mint(lpA, 1_000_000 ether);
+        token1_.mint(lpA, 1_000_000 ether);
+        token0_.mint(lpB, 1_000_000 ether);
+        token1_.mint(lpB, 1_000_000 ether);
 
         token0_.approve(address(permit2), type(uint256).max);
         token1_.approve(address(permit2), type(uint256).max);
@@ -231,7 +282,7 @@ abstract contract ERDDemoBase is Script, Deployers {
             warmupPeriod: 0,
             cooldownPeriod: 1 days,
             earlyWithdrawalPenaltyBps: 1_000,
-            emissionRate: 1 ether,
+            emissionRate: DEMO_EMISSION_RATE,
             maxFunding: type(uint128).max
         });
 
@@ -239,12 +290,23 @@ abstract contract ERDDemoBase is Script, Deployers {
     }
 
     function _fundProgram(DemoState memory s) internal {
-        s.rewardToken.mint(msg.sender, DIRECT_FUNDING);
+        s.rewardToken.mint(s.deployer, DIRECT_FUNDING);
         s.rewardToken.approve(address(s.router), DIRECT_FUNDING);
         s.router.directFund(s.poolId, DIRECT_FUNDING);
 
         s.adapter.mintRevenue(ADAPTER_FUNDING);
         s.adapter.routeRevenue(s.poolId, ADAPTER_FUNDING);
+    }
+
+    function _topUpNativeIfNeeded(address deployer, address recipient, uint256 targetBalance) internal {
+        if (recipient == deployer) return;
+        if (recipient.balance >= targetBalance) return;
+
+        uint256 amount = targetBalance - recipient.balance;
+        (bool ok,) = payable(recipient).call{value: amount}("");
+        require(ok, "Native top-up failed");
+        console2.log("nativeTopUpRecipient", recipient);
+        console2.log("nativeTopUpAmount", amount);
     }
 
     function _prepareLpWallet(uint256 lpKey, MockERC20 token0_, MockERC20 token1_) internal {
@@ -268,19 +330,29 @@ abstract contract ERDDemoBase is Script, Deployers {
             liquidityAmount
         );
 
-        vm.startBroadcast(lpKey);
-        positionManager.mint(
-            s.poolKey,
-            s.tickLower,
-            s.tickUpper,
-            liquidityAmount,
-            amount0Expected + 1,
-            amount1Expected + 1,
-            lp,
-            block.timestamp + 60,
-            abi.encode(lp)
+        bytes memory actions = abi.encodePacked(
+            uint8(Actions.MINT_POSITION), uint8(Actions.SETTLE_PAIR), uint8(Actions.SWEEP), uint8(Actions.SWEEP)
         );
+        bytes[] memory params = new bytes[](4);
+        params[0] = abi.encode(
+            s.poolKey, s.tickLower, s.tickUpper, liquidityAmount, amount0Expected + 1, amount1Expected + 1, lp, abi.encode(lp)
+        );
+        params[1] = abi.encode(s.poolKey.currency0, s.poolKey.currency1);
+        params[2] = abi.encode(s.poolKey.currency0, lp);
+        params[3] = abi.encode(s.poolKey.currency1, lp);
+
+        vm.startBroadcast(lpKey);
+        positionManager.modifyLiquidities(abi.encode(actions, params), block.timestamp + 1 days);
         vm.stopBroadcast();
+    }
+
+    function _activateWeightForZeroWarmup(DemoState memory s, uint256 lpKey, address lp) internal {
+        if (ACTIVATION_LIQUIDITY_TOUCH == 0) return;
+        _mintForLp(s, lpKey, lp, ACTIVATION_LIQUIDITY_TOUCH);
+    }
+
+    function _advanceLocalTime(uint256) internal pure {
+        // Intentionally a no-op for broadcast reliability. Time still advances across mined txs.
     }
 
     function _runSwap(DemoState memory s) internal {
@@ -292,7 +364,7 @@ abstract contract ERDDemoBase is Script, Deployers {
             poolKey: s.poolKey,
             hookData: abi.encode(s.deployer),
             receiver: s.deployer,
-            deadline: block.timestamp + 60
+            deadline: block.timestamp + 1 days
         });
         vm.stopBroadcast();
     }

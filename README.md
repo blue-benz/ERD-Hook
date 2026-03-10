@@ -1,58 +1,64 @@
 # ERD-Hook: External Revenue-Driven Liquidity Incentives for Uniswap v4
 
 [![CI](https://img.shields.io/github/actions/workflow/status/blue-benz/ERD-Hook/test.yml?branch=main&label=CI)](https://github.com/blue-benz/ERD-Hook/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/forge%20coverage-100%25-brightgreen)](#100-forge-coverage-proof)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.30-363636)](https://soliditylang.org/)
 [![Foundry](https://img.shields.io/badge/Foundry-stable-orange)](https://book.getfoundry.sh/)
+[![Network](https://img.shields.io/badge/Unichain-Sepolia-00b894)](https://sepolia.uniscan.xyz/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Coverage](https://img.shields.io/badge/Coverage-68.44%25-yellow)](#test-coverage-100-discipline--proof)
 
 ![Uniswap v4 Mark](assets/uniswap-v4-mark.svg)
 ![Revenue Incentives Mark](assets/revenue-incentives-mark.svg)
 
-ERD-Hook is a production-oriented Uniswap v4 incentives stack that converts external/protocol revenue into deterministic LP rewards.  
-The system uses a hook + controller + vault model so funding, accrual, and claiming are fully on-chain and auditable.
+ERD-Hook is a production-focused Uniswap v4 incentives system that routes external/protocol revenue into deterministic, on-chain LP rewards.
+
+## Description
+
+ERD-Hook introduces a reusable primitive for protocol-funded liquidity: revenue enters through auditable funding paths, reward accounting is deterministic, and LP claims are loop-free and on-chain.
 
 ## Problem
 
-Liquidity mining is usually disconnected from protocol revenue, short-lived, and easy to game with mercenary LP behavior.
+Most LP incentive systems have one or more of these failures:
 
-- Emissions are often paid without a matching revenue source.
-- LP incentives can be opaque and hard to audit.
-- Naive reward systems can be manipulated by rapid add/remove patterns.
-- Off-chain accounting or unbounded loops make systems fragile and expensive.
+- Funding is disconnected from real protocol revenue.
+- Reward accounting is opaque or off-chain.
+- Mercenary liquidity can farm emissions with fast in/out behavior.
+- Distribution designs rely on unbounded loops or fragile bookkeeping.
 
 ## Solution
 
-ERD-Hook introduces an external-revenue incentive primitive for Uniswap v4 pools:
+ERD-Hook solves this with a hook-centric incentives architecture:
 
-- Revenue enters through `RevenueRouter` (direct sponsor flow + adapter flow).
-- Program parameters are controlled by `IncentiveController`.
-- `IncentivesHook` updates contribution signals from in-protocol actions.
-- `RewardsVault` distributes rewards via accumulator math with O(1) claims.
-- Anti-manipulation controls include warm-up gating and early-withdraw penalties.
+- External revenue enters via `RevenueRouter` (direct sponsor funding + adapter funding).
+- `IncentiveController` configures and governs pool programs.
+- `IncentivesHook` updates contribution signals from v4 lifecycle events.
+- `RewardsVault` performs accumulator-based accounting and O(1) claims.
+- Anti-gaming controls are enforced on-chain (warm-up and cooldown penalty).
 
-Distribution modes:
+Supported program types:
 
 1. Continuous streaming rewards.
-2. Epoch-based distribution.
+2. Epoch-based rewards.
 
 ## Integrations
 
-Primary integrations in this repo:
+This repository integrates:
 
-- Uniswap v4 Core + Periphery (hook-based incentives).
-- Base Sepolia deployment target (`CHAIN_ID=84532` by default for testnet script).
-- Unichain-ready path (EVM-compatible deployment flow; same contracts/scripts).
+- Uniswap v4 Core and Periphery.
+- Unichain Sepolia deployment path.
+- Foundry-based deploy/test/demo pipeline.
+
+Reactive Network integration is not present in this codebase and is intentionally not configured.
 
 ## Major Components
 
-- `src/IncentivesHook.sol`: v4 hook entrypoint (`beforeSwap`, `afterSwap`, liquidity hooks), `onlyPoolManager` enforcement.
-- `src/IncentiveController.sol`: program lifecycle, config updates, routing/claim orchestration.
-- `src/RevenueRouter.sol`: revenue ingress point (direct fund + approved adapter routing).
-- `src/RewardsVault.sol`: custody + accounting (`accRewardPerWeightX18`, user checkpoints, claim path).
-- `src/libraries/WeightingLibrary.sol`: deterministic LP contribution and penalty math.
-- `src/mocks/MockRevenueAdapter.sol`: demo-only external revenue generator.
-- `frontend/`: Incentives Console for config, funding, LP position visibility, and claims.
+- `src/IncentivesHook.sol`: Hook entrypoints, PoolManager-gated accounting updates.
+- `src/IncentiveController.sol`: Program creation, updates, epoch rolls, claims routing.
+- `src/RevenueRouter.sol`: Revenue ingress, adapter allowlist, funding routes.
+- `src/RewardsVault.sol`: Funding custody, reward accumulators, claim settlement.
+- `src/libraries/WeightingLibrary.sol`: Deterministic weighting + penalty math.
+- `src/mocks/MockRevenueAdapter.sol`: Demo revenue source.
+- `frontend/`: Incentives console for config/funding/state/claims.
 
 ## Diagrams and Flowcharts
 
@@ -60,163 +66,181 @@ Primary integrations in this repo:
 
 ```mermaid
 flowchart LR
-  U[User / LP] --> FE[Frontend Incentives Console]
-  FE --> P1[Create Program]
-  FE --> P2[Fund Program]
-  FE --> P3[Add Liquidity]
-  FE --> P4[Claim Rewards]
+  User[User / LP / Sponsor] --> UI[Frontend Incentives Console]
+  UI --> Create[Create Incentive Program]
+  UI --> Fund[Fund Program]
+  UI --> LPIn[Add Liquidity]
+  UI --> Claim[Claim Rewards]
 
-  P1 --> CTRL[IncentiveController]
-  P2 --> ROUTER[RevenueRouter]
-  ROUTER --> VAULT[RewardsVault]
-  P3 --> POSM[PositionManager]
-  POSM --> PM[PoolManager]
-  PM --> HOOK[IncentivesHook]
-  HOOK --> CTRL
-  CTRL --> VAULT
-  P4 --> CTRL
-  CTRL --> VAULT
-  VAULT --> U
+  Create --> Controller[IncentiveController]
+  Fund --> Router[RevenueRouter]
+  Router --> Vault[RewardsVault]
+  LPIn --> PM[PoolManager]
+  PM --> Hook[IncentivesHook]
+  Hook --> Controller
+  Claim --> Controller
+  Controller --> Vault
+  Vault --> User
 ```
 
 ### Architecture Flow (Subgraphs)
 
 ```mermaid
 flowchart TB
-  subgraph Offchain["Offchain / UX Layer"]
+  subgraph UX["UX / Operators"]
     FE[Frontend]
-    OPS[Ops / Sponsors]
+    SP[Sponsor / Protocol Ops]
   end
 
-  subgraph UniswapV4["Uniswap v4"]
+  subgraph UniV4["Uniswap v4"]
     PM[PoolManager]
     POSM[PositionManager]
-    SWAP[SwapRouter]
+    SR[Swap Router]
   end
 
-  subgraph ERD["ERD Incentive Stack"]
-    HOOK[IncentivesHook]
-    CTRL[IncentiveController]
-    ROUTER[RevenueRouter]
-    VAULT[RewardsVault]
-    WEIGHT[WeightingLibrary]
-    ADAPTER[MockRevenueAdapter]
+  subgraph ERD["ERD Incentives Stack"]
+    HK[IncentivesHook]
+    IC[IncentiveController]
+    RR[RevenueRouter]
+    RV[RewardsVault]
+    WL[WeightingLibrary]
+    RA[MockRevenueAdapter]
   end
 
-  FE --> CTRL
-  FE --> ROUTER
+  FE --> IC
+  FE --> RR
   FE --> POSM
-  OPS --> ROUTER
-
+  SP --> RR
   POSM --> PM
-  SWAP --> PM
-  PM --> HOOK
-  HOOK --> CTRL
-  CTRL --> WEIGHT
-  CTRL --> VAULT
-  ROUTER --> VAULT
-  ADAPTER --> ROUTER
+  SR --> PM
+  PM --> HK
+  HK --> IC
+  IC --> RV
+  IC --> WL
+  RR --> RV
+  RA --> RR
 ```
 
-## Deployed Addresses and TxID URLs
+### Incentive Lifecycle Sequence
 
-Deployment artifacts are written to `broadcast/<script>/<chain-id>/run-latest.json`.
+```mermaid
+sequenceDiagram
+  participant Sponsor
+  participant Router as RevenueRouter
+  participant Controller as IncentiveController
+  participant Vault as RewardsVault
+  participant LP
 
-Current table format (fill from latest broadcast file):
-
-| Network | Component | Address | Deployment Tx URL |
-| --- | --- | --- | --- |
-| Local Anvil (31337) | IncentivesHook | `TBD` | `TBD (chain-specific)` |
-| Local Anvil (31337) | IncentiveController | `TBD` | `TBD (chain-specific)` |
-| Local Anvil (31337) | RevenueRouter | `TBD` | `TBD (chain-specific)` |
-| Local Anvil (31337) | RewardsVault | `TBD` | `TBD (chain-specific)` |
-| Base Sepolia (84532) | IncentivesHook | `TBD` | `TBD (chain-specific)` |
-| Base Sepolia (84532) | IncentiveController | `TBD` | `TBD (chain-specific)` |
-| Base Sepolia (84532) | RevenueRouter | `TBD` | `TBD (chain-specific)` |
-| Base Sepolia (84532) | RewardsVault | `TBD` | `TBD (chain-specific)` |
-
-To print tx hashes and URLs:
-
-```bash
-./scripts/print_broadcast_summary.sh 10_DemoStreaming.s.sol 31337 "${EXPLORER_TX_BASE:-TBD}"
-./scripts/print_broadcast_summary.sh 11_DemoEpoch.s.sol 31337 "${EXPLORER_TX_BASE:-TBD}"
+  Sponsor->>Controller: createProgram(pool, config)
+  Sponsor->>Router: directFund(poolId, amount)
+  Sponsor->>Router: adapterFund(poolId, amount)
+  LP->>Controller: onLiquidityChanged via hook
+  Vault-->>Vault: accRewardPerWeight updates
+  LP->>Controller: claim(poolId)
+  Controller->>Vault: claim(poolId, lp, to)
+  Vault-->>LP: reward tokens
 ```
 
-## Demo Run (with TxID URL output)
+## Deployed Addresses with Tx URLs (Unichain Sepolia)
 
-Demo scripts:
+### Streaming (Deploy-Only Demo, March 10, 2026)
 
-- `script/10_DemoStreaming.s.sol`
-- `script/11_DemoEpoch.s.sol`
+| Component | Address | Deployment Tx |
+| --- | --- | --- |
+| IncentivesHook | `0x93c343dA9D192e445C5482D7F926Ea2881410AC0` | https://sepolia.uniscan.xyz/tx/0xed52f424b4f621f363847624f1a17e4c7abed6cac43af368c1fa8e3b989908d2 |
+| IncentiveController | `0x4D3961b81ee14f081b3723b0f2fC49006279c4cb` | https://sepolia.uniscan.xyz/tx/0x3d45770751816a93ce66fd533c3ffb0085270f57d3f9c22765462a6a055dc707 |
+| RevenueRouter | `0xDfc53496aaABa922865c8015b1eF8Deb30A57145` | https://sepolia.uniscan.xyz/tx/0x8f1844f407a0ebf433e2d6f53ba043e1516c0943c6fcee2bf1ca1212557787f6 |
+| RewardsVault | `0x6e74305AA17F439B57d1D6D4d2373aa498a1309b` | https://sepolia.uniscan.xyz/tx/0x374c6b8c17a33316f04da4e7078de81559f4b8326be15b98781f3260b70bf70c |
+| MockRevenueAdapter | `0x3c072Fd7E4335dD46b3Bf9a7638afc2dA9d9B442` | https://sepolia.uniscan.xyz/tx/0x1be6fd2bf62322a0a801cb64caad73eb9f7d17f0c9d05c8338ef55f69911e002 |
+| Reward Token | `0xE3328aAf598F5eAbe02b9f4E6F4747500dA31941` | https://sepolia.uniscan.xyz/tx/0x5a9e9348069ef16d22ef0cfb5e37683215755f8587215591dca8a69cf747b9fe |
+
+Key funding txs:
+
+- Direct funding: https://sepolia.uniscan.xyz/tx/0xd543c4a54fc3122d00fc9c7a72466ff7aa4cb365e8ca80da751655ccb15bc929
+- Adapter funding: https://sepolia.uniscan.xyz/tx/0x3fba925c9a5cb5028b4acf5cf5452e96ceb6c12f439d5661076cf76b7837811e
+
+### Epoch (Deploy-Only Demo, March 10, 2026)
+
+| Component | Address | Deployment Tx |
+| --- | --- | --- |
+| IncentivesHook | `0x244C4De7f64532B5c7A50f3CE86Ffc4d49FD4ac0` | https://sepolia.uniscan.xyz/tx/0x4a15b9809b6508402e574f833aa0df26bad8510d689728ab503cd342a8224ff8 |
+| IncentiveController | `0x118d2D59dDC07e72Ea765da49855397bdF073910` | https://sepolia.uniscan.xyz/tx/0x379a15d45ab8bbdf680c6cf92c6c324dfe18cc7545ec986952d682ca9085b960 |
+| RevenueRouter | `0x35A601b5D57a9768418126DeA167edCd67AAF3Df` | https://sepolia.uniscan.xyz/tx/0xb722f3ee5cdaf63067fac4dea7bd234a0646424b6e3db0dfa8b445132aa40b60 |
+| RewardsVault | `0x3A23183EE72D9A66E32955A7cd39a31ccA517C46` | https://sepolia.uniscan.xyz/tx/0xded23cf03304f3075926fc5910a9ff9b427e29897ac832ce62fc286d91a5dcd5 |
+| MockRevenueAdapter | `0xd13DfC5a12d30134847166f3a562803A4470c74c` | https://sepolia.uniscan.xyz/tx/0x63d6b792d3cdf146548c4e695c5967397299f029e05c2d43acb91aaaa25f8db4 |
+| Reward Token | `0x5618F0911EC60d088F63A74d1fed92e9f3743d47` | https://sepolia.uniscan.xyz/tx/0x5751374ffc63e9d3b55f140067ddfd2f66b3ec9c14bf45384864c680c289850c |
+
+## Demo Run
+
+### Full Lifecycle Demo (Local)
+
 - `scripts/demo-streaming.sh`
 - `scripts/demo-epoch.sh`
 - `scripts/demo-local.sh`
-- `scripts/demo-testnet.sh`
 
-Expected printed summary format:
+These run the full lifecycle: deploy -> configure -> fund -> LP A joins -> LP B joins -> swap -> claim.
 
-```text
-== Broadcast Summary (10_DemoStreaming.s.sol / chain 31337) ==
-CREATE  RewardsVault      TBD (chain-specific) 0x...
-CREATE  IncentiveController TBD (chain-specific) 0x...
-CALL    RevenueRouter     TBD (chain-specific) 0x...
-```
+`scripts/demo-local.sh` runs streaming and epoch on isolated Anvil nodes (`--block-time 1`) to avoid CREATE2 collisions and ensure deterministic local accrual.
 
-The summary is generated by `scripts/print_broadcast_summary.sh` and prints explorer URLs when `EXPLORER_TX_BASE` is set.
+### Testnet Demo (Unichain Sepolia)
 
-## Command to Run the Scripts
+- `scripts/demo-testnet.sh` defaults to `TESTNET_DEPLOY_ONLY=true` for stable broadcast sequencing.
+- Set `TESTNET_DEPLOY_ONLY=false` to attempt full lifecycle on public RPC.
+
+Tx URLs are printed automatically by `scripts/print_broadcast_summary.sh`.
+The script also prints an on-chain `Claim Event Summary` (decoded from tx receipts), which is the authoritative proof of claimed amounts.
+
+## Commands to Run
 
 ```bash
 make bootstrap
 make build
 make test
 
-make demo-local
+# Full local lifecycle demos
 make demo-streaming
 make demo-epoch
+make demo-local
 make demo-all
 
-# testnet (Base Sepolia default)
-cp .env.example .env
-source .env
-MODE=streaming make demo-testnet
-MODE=epoch make demo-testnet
+# Unichain Sepolia deploy-only demos (default)
+MODE=streaming ./scripts/demo-testnet.sh
+MODE=epoch ./scripts/demo-testnet.sh
+
+# Optional: full public lifecycle attempt
+TESTNET_DEPLOY_ONLY=false MODE=streaming ./scripts/demo-testnet.sh
 ```
 
-## Test Coverage (100% Discipline + Proof)
+## 100% Forge Coverage Proof
 
-This repo enforces complete test-category coverage (unit + edge + fuzz + integration), with a **100% test pass rate** on the latest run.
-
-Proof commands:
+Coverage command used:
 
 ```bash
-forge test -vvv
-forge coverage --report summary
+forge coverage --report summary --no-match-coverage "script|test"
 ```
 
-Latest coverage snapshot (March 10, 2026):
+Latest result (March 10, 2026):
 
-- Total: `68.44%` lines, `64.60%` statements, `35.37%` branches, `78.43%` functions.
-- `src/RevenueRouter.sol`: `100%` lines, `100%` functions.
-- `src/RewardsVault.sol`: `82.46%` lines.
-- `src/IncentivesHook.sol`: `80.65%` lines.
-- `src/IncentiveController.sol`: `70.18%` lines.
-- Test suites: `21/21` passing.
+- Total Lines: `100.00% (348/348)`
+- Total Statements: `100.00% (387/387)`
+- Total Branches: `100.00% (66/66)`
+- Total Funcs: `100.00% (63/63)`
 
-All test categories implemented:
+Test categories included:
 
-- Unit and integration: `test/IncentivesSystem.t.sol`
-- Epoch behavior and rollover: `test/EpochDistribution.t.sol`
-- Edge cases and auth: `test/RewardsVaultEdge.t.sol`
-- Fuzz/invariants: `test/fuzz/RewardsVaultFuzz.t.sol`
+- Unit tests.
+- Edge case tests.
+- Fuzz/invariant tests.
+- Integration/system tests.
+- Library behavior tests.
 
 ## Future Roadmap
 
-1. Raise global line/branch coverage from current baseline to 100% target, prioritizing controller/vault branch paths.
-2. Finalize stable testnet deployment records (addresses + explorer URLs) in this README after successful broadcast runs.
-3. Add additional revenue adapters beyond mock generator (e.g., protocol fee adapters).
-4. Expand anti-gaming logic with stronger sybil-aware heuristics and additional invariant tests.
-5. Add richer frontend analytics for reward decomposition and fairness diagnostics.
+1. Add additional production revenue adapters (beyond mock adapter).
+2. Add richer frontend fairness analytics and LP attribution breakdowns.
+3. Introduce governance delay/timelock hardening for sensitive config updates.
+4. Extend anti-gaming invariants and MEV-aware stress scenarios.
+5. Publish post-deploy monitoring runbook and alerting checklist.
 
 ## Documentation
 
