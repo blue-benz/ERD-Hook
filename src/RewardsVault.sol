@@ -66,11 +66,6 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
     mapping(bytes32 poolId => ProgramInternal program) private _programs;
     mapping(bytes32 poolId => mapping(address lp => UserState state)) private _users;
 
-    modifier onlyController() {
-        if (msg.sender != controller) revert NotController();
-        _;
-    }
-
     modifier onlyRouter() {
         if (msg.sender != router) revert NotRouter();
         _;
@@ -85,12 +80,14 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
         controller = newController;
     }
 
-    function setRouter(address newRouter) external onlyController {
+    function setRouter(address newRouter) external {
+        _requireController();
         emit RouterUpdated(router, newRouter);
         router = newRouter;
     }
 
-    function registerProgram(bytes32 poolId, ProgramConfig calldata config) external onlyController {
+    function registerProgram(bytes32 poolId, ProgramConfig calldata config) external {
+        _requireController();
         if (_programs[poolId].exists) revert ProgramExists();
         _validateConfig(config);
 
@@ -121,7 +118,8 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
         emit ProgramRegistered(poolId, config.rewardToken, config.distributionType);
     }
 
-    function updateProgramConfig(bytes32 poolId, ProgramConfig calldata config) external onlyController {
+    function updateProgramConfig(bytes32 poolId, ProgramConfig calldata config) external {
+        _requireController();
         ProgramInternal storage program = _programs[poolId];
         if (!program.exists) revert ProgramNotFound();
         _validateConfig(config);
@@ -156,7 +154,8 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
         emit ProgramFunded(poolId, source, amount);
     }
 
-    function onLiquidityDelta(bytes32 poolId, address lp, int256 liquidityDelta) external onlyController {
+    function onLiquidityDelta(bytes32 poolId, address lp, int256 liquidityDelta) external {
+        _requireController();
         if (liquidityDelta == 0) revert InvalidLiquidityDelta();
 
         ProgramInternal storage program = _programs[poolId];
@@ -211,7 +210,8 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
         emit LiquidityWeightUpdated(poolId, lp, liquidityDelta, user.activeWeight, user.pendingWeight);
     }
 
-    function rollEpoch(bytes32 poolId, uint40 startTime, uint40 endTime, uint96 emissionRate) external onlyController {
+    function rollEpoch(bytes32 poolId, uint40 startTime, uint40 endTime, uint96 emissionRate) external {
+        _requireController();
         if (endTime <= startTime) revert InvalidEpochWindow();
 
         ProgramInternal storage program = _programs[poolId];
@@ -304,6 +304,10 @@ contract RewardsVault is IRewardsVault, Owned, ReentrancyLock {
 
     function getUserState(bytes32 poolId, address lp) external view returns (UserState memory) {
         return _users[poolId][lp];
+    }
+
+    function _requireController() internal view {
+        if (msg.sender != controller) revert NotController();
     }
 
     function _validateConfig(ProgramConfig calldata config) internal pure {

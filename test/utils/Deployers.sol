@@ -59,11 +59,19 @@ abstract contract Deployers {
 
     function deployPermit2() internal {
         address permit2Address = AddressConstants.getPermit2Address();
+        if (block.chainid == 31337) {
+            // On local Anvil chains, rely on a real deployment tx so broadcast scripts
+            // can interact with Permit2 without requiring debug-only setCode state.
+            if (permit2Address.code.length > 0) {
+                permit2 = IPermit2(permit2Address);
+            } else {
+                permit2 = IPermit2(Permit2Deployer.deploy());
+            }
+            return;
+        }
 
-        if (permit2Address.code.length > 0) {
-            // Permit2 is already deployed, no need to etch it.
-        } else {
-            _etch(permit2Address, Permit2Deployer.deploy().code);
+        if (permit2Address.code.length == 0) {
+            revert("Permit2 not deployed on this network");
         }
 
         permit2 = IPermit2(permit2Address);
