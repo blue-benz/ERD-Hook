@@ -143,32 +143,87 @@ sequenceDiagram
 
 ## Deployed Addresses with Tx URLs (Unichain Sepolia)
 
-### Streaming (Deploy-Only Demo, March 10, 2026)
+Different address sets exist for a valid reason:
 
-| Component | Address | Deployment Tx |
+1. `streaming` and `epoch` are different programs, so they deploy different contracts.
+2. `deploy-only` and `full-lifecycle` are different testnet runs, each with fresh deployments.
+
+### Full-Lifecycle Demo Runs (Canonical, March 10, 2026)
+
+These were executed with `TESTNET_DEPLOY_ONLY=false` and include deploy, fund, LP add, swap, and claim on-chain.
+
+#### Streaming (Full Lifecycle)
+
+| Component | Address | Deployment Tx URL |
+| --- | --- | --- |
+| IncentivesHook | `0xb4C6b1481C38333834aA784c3210979E95090aC0` | https://sepolia.uniscan.xyz/tx/0x3a2ea526e9f5c33c4dcc0a113ad38dfc215d4861bbf45ee4626f1b658870d173 |
+| IncentiveController | `0xCC435Bdd95e20fe41D3705DE3Af39fCBeACfFD7E` | https://sepolia.uniscan.xyz/tx/0x8556dd69fbcd06192d3c079af2d1a1dae0b3e5c190ef51578c1a2556e28f02d8 |
+| RevenueRouter | `0xFD1381fbeC17E10B6aFA078ed16FfF952EE68f21` | https://sepolia.uniscan.xyz/tx/0xb972353ab7b3e7e6e2d144af1379226cc92ca14423ed81dad04545adea12a870 |
+| RewardsVault | `0xdE398Eb17Ce389db5BC823Ed93d3e8f8bC10a484` | https://sepolia.uniscan.xyz/tx/0x41024514cd96dcb98268e29946ac9a903bbf9c1cff6f752551980b70429597d8 |
+| MockRevenueAdapter | `0x3DE0f341D689dc066DC2EBf816150E1B6a077497` | https://sepolia.uniscan.xyz/tx/0x9f9ad1dd3414b2f2b8ccdff77558228af81d5bc767d4aa42747f266baccd33c1 |
+| Reward Token | `0x314ed6eE271534426E358a3Daf3eCddEE034Edf1` | https://sepolia.uniscan.xyz/tx/0x0bf7a6182ec0088da525f9b90ed3589f2b3fec513baef314511043b66d01b2f5 |
+
+Streaming full-demo tx URLs (proof path):
+
+- Program creation: https://sepolia.uniscan.xyz/tx/0x0f299589dd15f06954bbf1fb8dd09447f2c9496e5967031433ed5e8468d502d8
+- Direct funding: https://sepolia.uniscan.xyz/tx/0xa0d69dffc1cd244fba0a2b880b537ce8b47db124dd3b2492186be5cca0b2a7ee
+- Adapter routing: https://sepolia.uniscan.xyz/tx/0x06f1f7b5ded6b8d5c000ffdb766f98f070fb62303103eb384b9c2b089f94844c
+- LP A add-liquidity: https://sepolia.uniscan.xyz/tx/0x7daa0612ab5b98bc6298155ab7692d9826008b647e0ac510f0e84ef6ac2efe7e
+- LP B add-liquidity: https://sepolia.uniscan.xyz/tx/0x313c8a2b2084a82e008eaa27bcbd122cb1b5c4d8f6610bb9b4c5b22408034a7a
+- Swap activity: https://sepolia.uniscan.xyz/tx/0x6486a51dcfb761215ae4f5d6cdd754a5f24490f94e2d35d84e88d9a92b1fa71e
+- Claim LP A: https://sepolia.uniscan.xyz/tx/0xee9dc6cf7437fe88006e15e83718891d31beead5aad4d0491aafc9fd89e0113f
+- Claim LP B: https://sepolia.uniscan.xyz/tx/0x29be09b9e9b3683511197be7b46807b4165aad25297a2ddd405f76025f4cde9e
+
+#### Epoch (Full Lifecycle)
+
+| Component | Address | Deployment Tx URL |
+| --- | --- | --- |
+| IncentivesHook | `0xB44eCe25A4D33e2e32be337E7f5f6b4771d30aC0` | https://sepolia.uniscan.xyz/tx/0xb672880de9cd086fbbd1f97e95959ad992a56e6005eb54bf9a9d1347c63ee72b |
+| IncentiveController | `0xFCcF2AC6A844F381018dA10D0E8f1F098864a804` | https://sepolia.uniscan.xyz/tx/0x14037dcd762e0d6eaa2f122f23b7f5e56db2e529d36dcbd5614a655e2ce9bca2 |
+| RevenueRouter | `0xFdC9b1386CA5BB54DF2f4565706221070A838B0E` | https://sepolia.uniscan.xyz/tx/0xabf1d1761ff6fa207597a8873f1e3f05b6b620b0bf1a7f8bcdb58116094bf6c9 |
+| RewardsVault | `0xB3D4e2dCd5F00628E43e6b448A0D278377eD0C50` | https://sepolia.uniscan.xyz/tx/0xaaad62a14c8010833d5faa033a81c8b75df2104935469b47056ad9b7d99f323f |
+| MockRevenueAdapter | `0x043FE47065Ee008967728B0e4e8B73bbF7421585` | https://sepolia.uniscan.xyz/tx/0xee72857f8bc70c53e6b00d80a513f662e510f155455abc90c7d3ac405e1a9b73 |
+| Reward Token | `0x3eDE13af71c1DF870bbD5396DB25144A8aDCbE6A` | https://sepolia.uniscan.xyz/tx/0x144ea1075a3da694f957e498b49ee26ab52931e037a7447ce35c3ba4919f81e3 |
+
+Epoch full-demo tx URLs (proof path):
+
+- Program creation: https://sepolia.uniscan.xyz/tx/0x661903ebb884668fb180d7afea19ba8b5fed403609fbe113bb3e2f2471d619dd
+- Direct funding: https://sepolia.uniscan.xyz/tx/0xd01d7a97cd82420635d6e080490cd600d51c664e406a7071204a66755e0722d3
+- Adapter routing: https://sepolia.uniscan.xyz/tx/0xa537e9692381a57a6a82bf31191dbbd83fc71619939b7a3403fbc27bcccdfda4
+- LP A add-liquidity: https://sepolia.uniscan.xyz/tx/0x4ef10eaeaa6a84d818977c9fc683388f6307b03dad84d96157a4c070a1d056c3
+- LP B add-liquidity: https://sepolia.uniscan.xyz/tx/0x91726886b7a3af22b758a81b78c691d79c1bf151552503caab5d7f4684ea97c5
+- Swap activity: https://sepolia.uniscan.xyz/tx/0x0d35afd1aa03191c2262189b63fd109aab5b97db87bf7ced7921993b8cec65fc
+- Claim LP A: https://sepolia.uniscan.xyz/tx/0x2dd314cd6fc5fb91c4216ef071d4ed77977ee4ab7bfccc4f117ce73ba89dc0a9
+- Claim LP B: https://sepolia.uniscan.xyz/tx/0xac495e1c97e41205499aa1b500212e6e23b87e3cc137e574deafd4401007e3f9
+
+For every tx URL in each run (not just key checkpoints), run:
+
+```bash
+./scripts/print_broadcast_summary.sh 10_DemoStreaming.s.sol 1301 https://sepolia.uniscan.xyz/tx "$SEPOLIA_RPC_URL"
+./scripts/print_broadcast_summary.sh 11_DemoEpoch.s.sol 1301 https://sepolia.uniscan.xyz/tx "$SEPOLIA_RPC_URL"
+```
+
+### Archived Deploy-Only Runs (Reference)
+
+These are older stability runs with `TESTNET_DEPLOY_ONLY=true` (deploy/configure/fund only).
+
+#### Streaming (Deploy-Only)
+
+| Component | Address | Deployment Tx URL |
 | --- | --- | --- |
 | IncentivesHook | `0x93c343dA9D192e445C5482D7F926Ea2881410AC0` | https://sepolia.uniscan.xyz/tx/0xed52f424b4f621f363847624f1a17e4c7abed6cac43af368c1fa8e3b989908d2 |
 | IncentiveController | `0x4D3961b81ee14f081b3723b0f2fC49006279c4cb` | https://sepolia.uniscan.xyz/tx/0x3d45770751816a93ce66fd533c3ffb0085270f57d3f9c22765462a6a055dc707 |
 | RevenueRouter | `0xDfc53496aaABa922865c8015b1eF8Deb30A57145` | https://sepolia.uniscan.xyz/tx/0x8f1844f407a0ebf433e2d6f53ba043e1516c0943c6fcee2bf1ca1212557787f6 |
 | RewardsVault | `0x6e74305AA17F439B57d1D6D4d2373aa498a1309b` | https://sepolia.uniscan.xyz/tx/0x374c6b8c17a33316f04da4e7078de81559f4b8326be15b98781f3260b70bf70c |
-| MockRevenueAdapter | `0x3c072Fd7E4335dD46b3Bf9a7638afc2dA9d9B442` | https://sepolia.uniscan.xyz/tx/0x1be6fd2bf62322a0a801cb64caad73eb9f7d17f0c9d05c8338ef55f69911e002 |
-| Reward Token | `0xE3328aAf598F5eAbe02b9f4E6F4747500dA31941` | https://sepolia.uniscan.xyz/tx/0x5a9e9348069ef16d22ef0cfb5e37683215755f8587215591dca8a69cf747b9fe |
 
-Key funding txs:
+#### Epoch (Deploy-Only)
 
-- Direct funding: https://sepolia.uniscan.xyz/tx/0xd543c4a54fc3122d00fc9c7a72466ff7aa4cb365e8ca80da751655ccb15bc929
-- Adapter funding: https://sepolia.uniscan.xyz/tx/0x3fba925c9a5cb5028b4acf5cf5452e96ceb6c12f439d5661076cf76b7837811e
-
-### Epoch (Deploy-Only Demo, March 10, 2026)
-
-| Component | Address | Deployment Tx |
+| Component | Address | Deployment Tx URL |
 | --- | --- | --- |
 | IncentivesHook | `0x244C4De7f64532B5c7A50f3CE86Ffc4d49FD4ac0` | https://sepolia.uniscan.xyz/tx/0x4a15b9809b6508402e574f833aa0df26bad8510d689728ab503cd342a8224ff8 |
 | IncentiveController | `0x118d2D59dDC07e72Ea765da49855397bdF073910` | https://sepolia.uniscan.xyz/tx/0x379a15d45ab8bbdf680c6cf92c6c324dfe18cc7545ec986952d682ca9085b960 |
 | RevenueRouter | `0x35A601b5D57a9768418126DeA167edCd67AAF3Df` | https://sepolia.uniscan.xyz/tx/0xb722f3ee5cdaf63067fac4dea7bd234a0646424b6e3db0dfa8b445132aa40b60 |
 | RewardsVault | `0x3A23183EE72D9A66E32955A7cd39a31ccA517C46` | https://sepolia.uniscan.xyz/tx/0xded23cf03304f3075926fc5910a9ff9b427e29897ac832ce62fc286d91a5dcd5 |
-| MockRevenueAdapter | `0xd13DfC5a12d30134847166f3a562803A4470c74c` | https://sepolia.uniscan.xyz/tx/0x63d6b792d3cdf146548c4e695c5967397299f029e05c2d43acb91aaaa25f8db4 |
-| Reward Token | `0x5618F0911EC60d088F63A74d1fed92e9f3743d47` | https://sepolia.uniscan.xyz/tx/0x5751374ffc63e9d3b55f140067ddfd2f66b3ec9c14bf45384864c680c289850c |
 
 ## Demo Run
 
@@ -185,7 +240,7 @@ These run the full lifecycle: deploy -> configure -> fund -> LP A joins -> LP B 
 ### Testnet Demo (Unichain Sepolia)
 
 - `scripts/demo-testnet.sh` defaults to `TESTNET_DEPLOY_ONLY=true` for stable broadcast sequencing.
-- Set `TESTNET_DEPLOY_ONLY=false` to attempt full lifecycle on public RPC.
+- Set `TESTNET_DEPLOY_ONLY=false` to run full lifecycle on public RPC.
 
 Tx URLs are printed automatically by `scripts/print_broadcast_summary.sh`.
 The script also prints an on-chain `Claim Event Summary` (decoded from tx receipts), which is the authoritative proof of claimed amounts.
@@ -207,8 +262,9 @@ make demo-all
 MODE=streaming ./scripts/demo-testnet.sh
 MODE=epoch ./scripts/demo-testnet.sh
 
-# Optional: full public lifecycle attempt
+# Full public lifecycle demos
 TESTNET_DEPLOY_ONLY=false MODE=streaming ./scripts/demo-testnet.sh
+TESTNET_DEPLOY_ONLY=false MODE=epoch ./scripts/demo-testnet.sh
 ```
 
 ## 100% Forge Coverage Proof
