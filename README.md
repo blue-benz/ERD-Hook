@@ -143,12 +143,7 @@ sequenceDiagram
 
 ## Deployed Addresses with Tx URLs (Unichain Sepolia)
 
-Different address sets exist for a valid reason:
-
-1. `streaming` and `epoch` are different programs, so they deploy different contracts.
-2. `deploy-only` and `full-lifecycle` are different testnet runs, each with fresh deployments.
-
-### Full-Lifecycle Demo Runs (Canonical, March 10, 2026)
+Latest full-lifecycle demo deployments (March 10, 2026).
 
 These were executed with `TESTNET_DEPLOY_ONLY=false` and include deploy, fund, LP add, swap, and claim on-chain.
 
@@ -202,28 +197,6 @@ For every tx URL in each run (not just key checkpoints), run:
 ./scripts/print_broadcast_summary.sh 10_DemoStreaming.s.sol 1301 https://sepolia.uniscan.xyz/tx "$SEPOLIA_RPC_URL"
 ./scripts/print_broadcast_summary.sh 11_DemoEpoch.s.sol 1301 https://sepolia.uniscan.xyz/tx "$SEPOLIA_RPC_URL"
 ```
-
-### Archived Deploy-Only Runs (Reference)
-
-These are older stability runs with `TESTNET_DEPLOY_ONLY=true` (deploy/configure/fund only).
-
-#### Streaming (Deploy-Only)
-
-| Component | Address | Deployment Tx URL |
-| --- | --- | --- |
-| IncentivesHook | `0x93c343dA9D192e445C5482D7F926Ea2881410AC0` | https://sepolia.uniscan.xyz/tx/0xed52f424b4f621f363847624f1a17e4c7abed6cac43af368c1fa8e3b989908d2 |
-| IncentiveController | `0x4D3961b81ee14f081b3723b0f2fC49006279c4cb` | https://sepolia.uniscan.xyz/tx/0x3d45770751816a93ce66fd533c3ffb0085270f57d3f9c22765462a6a055dc707 |
-| RevenueRouter | `0xDfc53496aaABa922865c8015b1eF8Deb30A57145` | https://sepolia.uniscan.xyz/tx/0x8f1844f407a0ebf433e2d6f53ba043e1516c0943c6fcee2bf1ca1212557787f6 |
-| RewardsVault | `0x6e74305AA17F439B57d1D6D4d2373aa498a1309b` | https://sepolia.uniscan.xyz/tx/0x374c6b8c17a33316f04da4e7078de81559f4b8326be15b98781f3260b70bf70c |
-
-#### Epoch (Deploy-Only)
-
-| Component | Address | Deployment Tx URL |
-| --- | --- | --- |
-| IncentivesHook | `0x244C4De7f64532B5c7A50f3CE86Ffc4d49FD4ac0` | https://sepolia.uniscan.xyz/tx/0x4a15b9809b6508402e574f833aa0df26bad8510d689728ab503cd342a8224ff8 |
-| IncentiveController | `0x118d2D59dDC07e72Ea765da49855397bdF073910` | https://sepolia.uniscan.xyz/tx/0x379a15d45ab8bbdf680c6cf92c6c324dfe18cc7545ec986952d682ca9085b960 |
-| RevenueRouter | `0x35A601b5D57a9768418126DeA167edCd67AAF3Df` | https://sepolia.uniscan.xyz/tx/0xb722f3ee5cdaf63067fac4dea7bd234a0646424b6e3db0dfa8b445132aa40b60 |
-| RewardsVault | `0x3A23183EE72D9A66E32955A7cd39a31ccA517C46` | https://sepolia.uniscan.xyz/tx/0xded23cf03304f3075926fc5910a9ff9b427e29897ac832ce62fc286d91a5dcd5 |
 
 ## Demo Run
 
