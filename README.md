@@ -155,16 +155,14 @@ sequenceDiagram
 
 ## Deployed Contracts
 ### Unichain Sepolia (chainId 1301)
-| Contract | Address | Deployment Tx |
-| --- | --- | --- |
-| IncentivesHook | [`0xB44eCe25A4D33e2e32be337E7f5f6b4771d30aC0`](https://sepolia.uniscan.xyz/address/0xB44eCe25A4D33e2e32be337E7f5f6b4771d30aC0) | [0xb672880de9cd086fbbd1f97e95959ad992a56e6005eb54bf9a9d1347c63ee72b](https://sepolia.uniscan.xyz/tx/0xb672880de9cd086fbbd1f97e95959ad992a56e6005eb54bf9a9d1347c63ee72b) |
-| IncentiveController | [`0xFCcF2AC6A844F381018dA10D0E8f1F098864a804`](https://sepolia.uniscan.xyz/address/0xFCcF2AC6A844F381018dA10D0E8f1F098864a804) | [0x14037dcd762e0d6eaa2f122f23b7f5e56db2e529d36dcbd5614a655e2ce9bca2](https://sepolia.uniscan.xyz/tx/0x14037dcd762e0d6eaa2f122f23b7f5e56db2e529d36dcbd5614a655e2ce9bca2) |
-| RevenueRouter | [`0xFdC9b1386CA5BB54DF2f4565706221070A838B0E`](https://sepolia.uniscan.xyz/address/0xFdC9b1386CA5BB54DF2f4565706221070A838B0E) | [0xabf1d1761ff6fa207597a8873f1e3f05b6b620b0bf1a7f8bcdb58116094bf6c9](https://sepolia.uniscan.xyz/tx/0xabf1d1761ff6fa207597a8873f1e3f05b6b620b0bf1a7f8bcdb58116094bf6c9) |
-| RewardsVault | [`0xB3D4e2dCd5F00628E43e6b448A0D278377eD0C50`](https://sepolia.uniscan.xyz/address/0xB3D4e2dCd5F00628E43e6b448A0D278377eD0C50) | [0xaaad62a14c8010833d5faa033a81c8b75df2104935469b47056ad9b7d99f323f](https://sepolia.uniscan.xyz/tx/0xaaad62a14c8010833d5faa033a81c8b75df2104935469b47056ad9b7d99f323f) |
-| MockRevenueAdapter | [`0x043FE47065Ee008967728B0e4e8B73bbF7421585`](https://sepolia.uniscan.xyz/address/0x043FE47065Ee008967728B0e4e8B73bbF7421585) | [0xee72857f8bc70c53e6b00d80a513f662e510f155455abc90c7d3ac405e1a9b73](https://sepolia.uniscan.xyz/tx/0xee72857f8bc70c53e6b00d80a513f662e510f155455abc90c7d3ac405e1a9b73) |
-| Reward Token | [`0x3eDE13af71c1DF870bbD5396DB25144A8aDCbE6A`](https://sepolia.uniscan.xyz/address/0x3eDE13af71c1DF870bbD5396DB25144A8aDCbE6A) | [0x144ea1075a3da694f957e498b49ee26ab52931e037a7447ce35c3ba4919f81e3](https://sepolia.uniscan.xyz/tx/0x144ea1075a3da694f957e498b49ee26ab52931e037a7447ce35c3ba4919f81e3) |
-
-Note: `IncentivesHook` is deployed via CREATE2, so the top-level receipt `contractAddress` can be empty on some explorers even when the internal deployment is successful.
+| Contract | Address |
+| --- | --- |
+| IncentivesHook | [`0xB44eCe25A4D33e2e32be337E7f5f6b4771d30aC0`](https://sepolia.uniscan.xyz/address/0xB44eCe25A4D33e2e32be337E7f5f6b4771d30aC0) |
+| IncentiveController | [`0xFCcF2AC6A844F381018dA10D0E8f1F098864a804`](https://sepolia.uniscan.xyz/address/0xFCcF2AC6A844F381018dA10D0E8f1F098864a804) |
+| RevenueRouter | [`0xFdC9b1386CA5BB54DF2f4565706221070A838B0E`](https://sepolia.uniscan.xyz/address/0xFdC9b1386CA5BB54DF2f4565706221070A838B0E) |
+| RewardsVault | [`0xB3D4e2dCd5F00628E43e6b448A0D278377eD0C50`](https://sepolia.uniscan.xyz/address/0xB3D4e2dCd5F00628E43e6b448A0D278377eD0C50) |
+| MockRevenueAdapter | [`0x043FE47065Ee008967728B0e4e8B73bbF7421585`](https://sepolia.uniscan.xyz/address/0x043FE47065Ee008967728B0e4e8B73bbF7421585) |
+| Reward Token | [`0x3eDE13af71c1DF870bbD5396DB25144A8aDCbE6A`](https://sepolia.uniscan.xyz/address/0x3eDE13af71c1DF870bbD5396DB25144A8aDCbE6A) |
 
 ## Live Demo Evidence
 Demo run date: **March 10, 2026**  
